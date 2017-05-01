@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/grid.js"> </script>
+</head>
+<body>
+  <script>
+    function diff_tanlu(arr1,arr2){//arr1为旧数据，arr2为新数据
+      if (arr2.length > arr1.length)
+        return arr2[arr2.length-1][0];
+      else{
+        var last = arr2.length-1;
+        return arr2[last][arr2[last].length - 1];
+      }
+    }
+    function tanlu(data,mod1,mod2){ //mod1为探路，庄探路为1,闲探路为0;mod2为路图类型
+      var data_old = other(dalu(data),mod2); //老的对应路图数据
+      data.push(mod1);
+      var data_new = other(dalu(data),mod2); //新的对应路图数据
+      return diff_tanlu(data_old,data_new);
+    }
+    function get_xiaolu_6(arr){
+      var dalu_data = dalu(arr);
+      var xiaolu_data = other(dalu_data,1);
+      return convert6(xiaolu_data);
+    }
+    function other_diff_3(arr1,arr2){
+      // var last1 = arr1[arr1.length - 1];
+      var rec = new Array();
+      var last2 = arr2[arr2.length - 1];
+      if(arr1.length == arr2.length){
+        // alert(123);
+        for(var i = 0;i<arr2.length;i++){
+          for(var j = 0;j<arr2[i].length;j++){
+            if(arr2[i][j] != arr1[i][j] && arr2[i][j] != "none"){
+              // alert(123);
+              // alert("i:"+i+"j:"+j);
+              rec.push(i,j,arr2[i][j]);
+              // alert(rec);
+            }
+            // alert("i:"+i+"j:"+j);
+          }
+        }
+      }
+      else{
+        for(var i = 0;i<last2.length;i++){
+          if(last2[i] != "none"){
+            rec.push(arr2.length-1,i,last2[i]);
+          }
+        }
+      }
+      return rec;
+    }
+    $(document).ready(function(){
+      // var arr1 = [5,9,1,5,9,1,5,9,1,5,5,5,1,5,5,5,1,5,5,5,9,1,5,5,1,5,1,5,1,5,1,5,5,5,5,5,9,1,5,5,1,5,5,5,5,1,5,5,5,1,5,1,5,1,5,5,5,5,5,1,1,5,5,9];
+      // alert(arr1.slice(-11,-1));
+      // var arr1 = [[[5,0],[5,0],"none"],[[5,0]]];
+      // var arr2 = [[[5,0],[5,0],"none"],[[5,1]]];
+      var data1 = [5,5,5,9,5,1,5,1,5,1,5,1,5,1,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,1,5,5,1,1,1,5,5,5,5,5,5,5,5,5,5,5,1,1,1,5,1];
+      var data2 = data1.slice(0,data1.length-1);
+      var arr1 = convert6(dalu(data1)); //多
+      var arr2 = convert6(dalu(data2));  //少
+      alert(dalu_diff_3(arr1,arr2));
+      // alert(arr2);
+      // var dalu = tanlu_new(arr);
+      // var result = tanlu_new(arr);
+      // for(var i = 0;i<result.length;i++){
+      //   $("#demo").append("[");
+      //   for(var j = 0;j<result[i].length;j++){
+      //     $("#demo").append(result[i][j]+",");
+      //   }
+      //   $("#demo").append("],");
+      // }
+      // $("#demo").html(tanlu_new(arr));
+      // alert(tanlu_new(arr));
+      // alert(diff_qizheng(dalu,3));
+      // alert(dalu[dalu.length-2]);
+      // var dalu_data = dalu(arr);
+      // var xiaolu_data = other(dalu_data,1);
+      // alert(convert6(xiaolu_data));
+          // var result = get_xiaolu_6(arr);
+          for(var i =0 ;i<arr2.length;i++){
+            $("#demo").append(arr2[i]+"<br/>");
+          }
+          $("#demo").append("<br/>");
+           for(var i =0 ;i<arr1.length;i++){
+            $("#demo").append(arr1[i]+"<br/>");
+          }
+      // alert(update_other_diff(arr,1));
+      // alert(123);
+      // alert(convert_img_array(10,5));
+      // var arr = "./img/50.png";
+      // alert(arr.slice(-6,-4));
+    });
+  </script>
+<p id="demo"></p>
+</body>
+</html>

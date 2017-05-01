@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>国际会</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/an.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <!-- 导航 -->
+    <nav class="navbar navbar-an">
+      <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">logo</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav nav-an">
+            <li class="active"><a href="#">首页</a></li>
+            <li><a href="#entertain">娱乐场</a></li>
+            <li><a href="#detail">投注流程</a></li>
+            <li><a href="#shouji">手机版</a></li>
+            <li><a href="#contact">联系我们</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">简体中文</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- 登录 -->
+    <div class="container-fluid an-form">
+      <div class="container">
+        <div class="form" id="entertain">
+          <form>
+            <div class="form-group an-horizontal">
+              <label for="user">账户 ：</label>
+              <input type="text" class="form-control" id="user" name="user">
+            </div>
+            <div class="form-group an-horizontal">
+              <label for="password">密码 ：</label>
+              <input type="password" class="form-control" id="password" name="password">
+            </div>
+            <div class="form-group an-horizontal">
+              <label for="verification">验证码 ：</label>
+              <input type="password" class="form-control" id="verification" name="verification">
+            </div>
+            <div class="form-group clearfix an-btn-group">
+              <button type="submit" class="btn btn-primary">登&nbsp;&nbsp;&nbsp;录</button>
+              <a href="./in2.html" class="btn btn-default pull-right">访&nbsp;&nbsp;&nbsp;客</a>
+            </div>
+            <div class="form-group">
+              <label class="an-checkbox"><input type="checkbox">会员</label>
+              <label class="an-checkbox"><input type="checkbox">关注</label>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid an-info">
+      <div class="container">
+        <img src="img/bg-info.jpg">
+      </div>
+    </div>
+    <div class="container-fluid an-detail" id="detail">
+      <div class="container">
+        <img src="img/bg-detail.jpg">
+      </div>
+    </div>
+    <div class="container-fluid an-install">
+      <div class="container">
+        <div class="an-title-info" id="shouji">
+          <p class="p1 text-center">专人代表下注 呈献贴心服务</p>
+          <p class="p2">不论玩家身在何处，只要透过电脑或手机系统，即可登入国际会游戏大堂，并按照您的指示，由电投手代表投注心水选择。透过高端网络视频，您可即时观看每局实况，仿如身处其中，体验现场的精彩刺激！</p>
+          <div class="clearfix an-box">
+            <div class="col-xs-6">
+              <img class="center-block" src="img/pc.png">
+              <p class="text-center p3">电脑版</p>
+              <div class="text-center">
+                <a href="#entertain" class="btn btn-yellow login">立即登入</a>
+              </div>
+            </div>
+            <div class="col-xs-6">
+              <img class="center-block" src="img/mobile.png">
+              <p class="text-center p3">手机版</p>
+              <div class="clearfix center-block mobile-box">
+                <div class="col-xs-6">
+                  <img src="img/android.png" class="center-block" style="width:100px;height:100px;">
+                  <div class="text-center">
+                    <a href="http://www.icclub8.com/data/upload/guojihui_2.3.apk" class="btn btn-yellow">安卓版安装</a>
+                  </div>
+                  <!-- <p class="text-center p4"><a href="#" class="an-teacher">安装教学<i class="an-icon-video"></i></a></p> -->
+                </div>
+                <div class="col-xs-6">
+                  <img src="img/ios.png" class="center-block" style="width:100px;height:100px;">
+                  <div class="text-center">
+                    <a href="javascript:void(0);" class="btn btn-yellow">IOS版安装</a>
+                  </div>
+                  <!-- <p class="text-center p4"><a href="#" class="an-teacher">安装教学<i class="an-icon-video"></i></a></p> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid an-aboutus" id="contact">
+      <div class="container">
+        <div class="aboutus-box">
+         <!--  <p>电话：010-56589  20215</p>
+          <p>邮箱：25848454@acii.com</p>
+          <p>Q Q : 254856</p>
+          <p>地址</p> -->
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid bg-yellow">footer</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

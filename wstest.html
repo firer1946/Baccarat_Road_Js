@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html" />
+    <meta name="author" content="blog.anchen8.net" />
+ 
+    <title>Untitled 2</title>
+    <script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"> </script>
+    <script>
+var socket;
+function connect(){
+    try{
+        socket=new WebSocket('ws://106.187.96.125:3335');
+    }catch(e){
+        alert('error');
+        return;
+    }
+    socket.onopen = send;
+    socket.onerror=sError;
+    socket.onmessage=sMessage;
+    socket.onclose=sClose
+ 
+}
+function sOpen(){
+    send();
+}
+function sError(){
+    alert('connect error')
+}
+function sMessage(msg){
+    $("#demo").html(JSON.stringify(msg.data));
+    // var obj = eval ("(" + msg + ")");
+    obj = JSON.parse(msg.data);
+    var a = obj.message.length;
+    // a.reverse();
+    // alert(a);
+}
+ 
+function sClose(){
+    // alert('connect close')
+    connect();
+}
+function send(){
+    var msg = {
+    "code" : "client-connect"
+    };
+    socket.send(JSON.stringify(msg));
+}
+function close(){
+    socket.close();
+}
+function state(){
+alert(socket.readyState);
+}
+
+connect();
+
+</script>
+</head>
+ 
+<body>
+<input id="msg" type="text">
+<button id="connect" onclick="connect();">Connect</button>
+<button id="send" onclick="send();">Send</button>
+<button id="close" onclick="close();">Close</button>
+<button id="close" onclick="state();">State</button>
+
+<p id="demo"></p>
+</body>
+ 
+</html>

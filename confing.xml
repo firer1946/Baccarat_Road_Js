@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chart>
+<!-- <videourl src="rtmp://106.187.96.125/live/"/>-->
+<videourl src="rtmp://106.187.96.125:1936/live/"/>
+
+<video videoname="ch_1" name="通道1"/>
+<!-- <video videoname="ch_2" name="通道2"/>
+<video videoname="ch_3" name="通道3"/>
+<video videoname="ch_4" name="通道4"/>
+<video videoname="ch_5" name="通道6"/>
+<video videoname="ch_7" name="通道7"/> -->
+</chart>

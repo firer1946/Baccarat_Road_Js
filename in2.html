@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>国际会大厅</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/an.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+    <style>
+		ib{
+		position: absolute;
+		padding-left: 3px;
+		font-size: 12px;
+		}
+    </style>
+    <style>
+		.mask {  
+		  position: absolute;  
+		  left: 0;  
+		  top: 0;  
+		  width: 100%;  
+		  height: 100%;  
+		  opacity: 0.5;  
+		  filter: alpha(opacity=30);  
+		  display: none;  
+		  /*background:#696969;  */
+		}  
+		.mask-msg {  
+		  margin-top:-100px;
+		  position: absolute;  
+		  padding: 0px;  
+		  width: 0px;  
+		  height: 0px;  
+		  /*border-width: 2px;  */
+		  /*border-style: solid;  */
+		  display: none;  
+		  border-color: #ddd;  
+		  font-size:12px;  
+		  /*background: #fff url('loading.gif') no-repeat scroll 5px center;  */
+		}  
+    </style>
+    <style>/* 动画 */
+			.spinner {
+			  margin: 100px auto 0;
+			  width: 150px;
+			  text-align: center;
+			}
+			 
+			.spinner > div {
+			  width: 30px;
+			  height: 30px;
+			  background-color:grey;
+			 
+			  border-radius: 100%;
+			  display: inline-block;
+			  -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+			  animation: bouncedelay 1.4s infinite ease-in-out;
+			  /* Prevent first frame from flickering when animation starts */
+			  -webkit-animation-fill-mode: both;
+			  animation-fill-mode: both;
+			}
+			 
+			.spinner .bounce1 {
+			  -webkit-animation-delay: -0.32s;
+			  animation-delay: -0.32s;
+			}
+			 
+			.spinner .bounce2 {
+			  -webkit-animation-delay: -0.16s;
+			  animation-delay: -0.16s;
+			}
+			 
+			@-webkit-keyframes bouncedelay {
+			  0%, 80%, 100% { -webkit-transform: scale(0.0) }
+			  40% { -webkit-transform: scale(1.0) }
+			}
+			 
+			@keyframes bouncedelay {
+			  0%, 80%, 100% {
+			    transform: scale(0.0);
+			    -webkit-transform: scale(0.0);
+			  } 40% {
+			    transform: scale(1.0);
+			    -webkit-transform: scale(1.0);
+			  }
+			}
+	</style>
+   	<script src="./js/jquery.min.js"></script>
+    <script src="./js/grid.js"> </script>
+  	<script>
+  	//----------websocket--------------------------------
+  		var socket;
+  		var saves = {};
+		function connect(){
+		    try{
+		        socket=new WebSocket('ws://106.187.96.125:3335');
+		    }catch(e){
+		        alert('error');
+		        return;
+		    }
+		    socket.onopen = send;
+		    socket.onerror=sError;
+		    socket.onmessage=sMessage;
+		    socket.onclose=sClose
+		 
+		}
+		function sError(){
+    		alert('connect error')
+		}
+		function sMessage(msg){
+			if($(".row").text() == 123){
+			    var obj = JSON.parse(msg.data);
+			    var ju;
+			    var tno;
+			    var status;
+			    var video_url;
+			    for(var i = 0;i<obj.message.length;i++){
+				    ju = obj.message[i].ju;
+				    tno = obj.message[i].tno;
+				    status = obj.message[i].status;
+				    var tid = obj.message[i].tid;
+				    // alert(obj.message[i].video_url);
+				    video_url = obj.message[i].video_url;
+				    if(status == 0){
+					    continue;
+		  			}
+		  			else{
+		  				$(".copytable div:eq(0)").attr("id","tab"+tno);
+		  				$(".copytable #href").attr('href',"./in3.php?tid="+i+"&tno="+tno+"&video_url="+video_url);
+					    $(".copytable #tno").html(tno);
+					    saves[tno] = fill_all(ju,".copytable #tab-default");
+					    $(".copytable #xianhong").html("本台限红："+obj.message[i].zhuang_min+" - "+obj.message[i].zhuang_max);     //限红
+					    $("#zuidi").html(obj.message[i].zhuang_min);  //最低投注
+					    var table = $(".copytable");
+			  			$(".row").append(table.html());
+		  			}
+		  		}
+		  		LoadingUtils.Close();  //关闭加载动画
+			}
+		  	else{
+		  		var newData = {};
+		  		var obj = JSON.parse(msg.data);
+		  		var ju;
+		  		var tno;
+		  		var status;
+		  		for(var i=0;i<obj.message.length;i++){
+		  			if(status == 0){
+		  				continue;
+		  			}
+		  			ju = obj.message[i].ju;
+		  			tno = obj.message[i].tno;
+		  			// debugger;
+		  			newData[tno] = get_all(ju);
+		  		}
+		  		for(var i in newData){
+		  			if(newData[i][0] == ""){
+		  				fill_big_blank("#tab"+i+" #tab-default");
+						fill_img_blank("#tab"+i+" #tab-default");
+						continue;
+						// alert("true");
+		  			}
+		  		// 	// if(i == 1003){
+		  		// 	// 	alert(newData[i][0]);
+		  		// 	// }
+		  			if(saves[i][0].length == newData[i][0].length){
+						// alert(123);
+						continue;
+
+		  			}
+					else{
+			  			if(newData[i][0].length < 66){
+				  			var result = diff1(saves[i][0],newData[i][0]);
+				  			// alert(result);
+					  		zhupan_update(result,"#tab"+i+" #tab-default");
+						}
+						else{
+							var ju2 = newData[i][0];
+							var zhupan_data =new Array();
+							zhupan_data = ju2.slice(-66,-1);
+							zhupan_data.push(ju2[ju2.length-1]);
+							fill_zhupan(zhupan_data,"#tab"+i+" #tab-default");
+						}
+						// alert("save"+saves[i][0]+"ju:"+ju);
+					
+						update_dalu2(saves[i][0],newData[i][0],11,0,"#tab"+i+" #tab-default");
+						other_update_new(saves[i][0],newData[i][0],11,6,"dayanzai",1,"#tab"+i+" #tab-default");
+						other_update_new(saves[i][0],newData[i][0],11,9,"xiaolu",2,"#tab"+i+" #tab-default");
+						other_update_new(saves[i][0],newData[i][0],28,9,"xiaoqiang",3,"#tab"+i+" #tab-default");
+					}
+			  		// var result2 = diff2(saves[i][1],newData[i][1]);
+			  		// dalu_update(result2,"#tab"+i+" #tab-default");
+			  		// var result3 = diff3(saves[i][2],newData[i][2]);
+			  		// other_update(result3,11,6,"dayanzai","#tab"+i+" #tab-default");
+			  		// var result4 = diff3(saves[i][3],newData[i][3]);
+			  		// var result5 = diff3(saves[i][4],newData[i][4]);
+			  		// other_update(result4,11,9,"xiaolu","#tab"+i+" #tab-default");
+			  		// other_update(result5,28,9,"xiaoqiang","#tab"+i+" #tab-default");
+		  		}
+		  		saves = newData;
+		  	}
+		}
+		function sClose(){
+		    alert('connect close')
+		}
+		function send(){
+		    var msg = {
+		    "code" : "client-connect"
+		    };
+		    socket.send(JSON.stringify(msg));
+		}
+	//---------------websocket end--------------------------------
+	//-----------------加载动画-----------------------
+		var LoadingUtils = {  
+        Open:function(){  
+            var top=  $(this).offset()==undefined?0:$(this).offset().top;  
+            var left=  $(this).offset()==undefined?0:$(this).offset().left;  
+              
+            var appender=null;  
+            if($(this).parent().length==0)  
+            {  
+                appender="body";  
+            }else  
+            {  
+                appender=$(this);  
+            }  
+            $("<div class=\"mask\"></div>").css({  
+                display : "block",  
+                width : $(this).outerWidth(),//100%  
+                height : $(this).outerHeight(),//height  
+                top:top,  
+                left:left  
+            }).appendTo(appender);//body  
+            $("<div class=\"mask-msg\"></div>").html("<div class='spinner'><div class='bounce1'></div><div class='bounce2'></div><div class='bounce3'></div></div>").appendTo(appender).css({  
+                display : "block",  
+                left : ($(this).outerWidth()-150) / 2+left,  
+                top :  ($(this).outerHeight()-42) / 2+top, 
+
+            });  
+        },  
+        Close:function(){  
+            $(".mask").remove();  
+            $(".mask-msg").remove();  
+        }  
+		}  
+	//---------------------动画加载over-------------------------------
+  		$(document).ready(function(){
+  			LoadingUtils.Open.call(this);  
+  			connect();
+		});
+  	</script>
+  </head>
+  <body>
+	<!-- <div class="an-body"> -->
+	    <!-- 导航 -->
+	    <nav class="navbar navbar-fixed-top navbar-in2">
+	      <div class="container-fluid">
+	        <!-- Brand and toggle get grouped for better mobile display -->
+	        <div class="navbar-header">
+	          <a class="navbar-brand" href="./index.html">logo</a>
+	        </div>
+
+	        <!-- Collect the nav links, forms, and other content for toggling -->
+	        <div class="collapse navbar-collapse">
+	          <!-- <ul class="nav navbar-nav nav-an">
+	            <li>
+	            	<div class="btn-group" role="group">
+		            	<a href="#" class="btn"><span class="glyphicon glyphicon-th"></span></a>
+		            	<a href="#" class="btn"><span class="glyphicon glyphicon-th-large"></span></a>
+		            	<a href="#" class="btn"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+	            	</div>
+	            </li>
+	            <li class="dropdown">
+		            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-sort-by-attributes"></span> 最高投注</a>
+		            <ul class="dropdown-menu">
+	                    <li><a href="#">最低投注</a></li>
+	                    <li><a href="#">最低投注</a></li>
+	                 </ul>
+	            </li>
+	            <li class="dropdown">
+		            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-sort-by-attributes-alt"></span> 全选</a>
+		            <ul class="dropdown-menu">
+	                    <li><a href="#">全选</a></li>
+	                    <li><a href="#">新濠天地</a></li>
+	                </ul>
+	            </li>
+	          </ul> -->
+	          <ul class="nav navbar-nav navbar-right">
+	            <!-- <li><a href="#">会员</a></li> -->
+	            <li><a href="#">访客</a></li>
+	            <!-- <li><span class="an-time">2015/08/01 15:00</span></li> -->
+	            <li class="dropdown">
+		            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-cog"></span></a>
+		            <ul class="dropdown-menu">
+	                    <!-- <li><a href="#">繁体中文</a></li> -->
+	                    <li><a href="#">简体中文</a></li>
+	                    <!-- <li><a href="#">ENGLISH</a></li> -->
+	                    <!-- <li><a href="#">...</a></li>
+	                    <li><a href="#">...</a></li> -->
+	                    <li><a href="javascript:void(0);" data-toggle="modal" data-target="#yxgz">游戏规则</a></li>
+	                    <!-- <li><a href="#">投注记录</a></li> -->
+	                    <li><a href="#">退出</a></li>
+	                </ul>
+	            </li>
+	          </ul>
+	        </div>
+	      </div>
+	    </nav>
+	    <div class="container-fluid an-container" style="margin-top: 105px;">
+	    	<div class="row">
+	    		<p style="display:none">123</p>
+	    	</div>
+	    	<!-- <span id="demo">hello,123</span> -->
+	    </div>
+	    <!-- 游戏规则 -->
+	    <div class="modal fade an-yxgz" id="yxgz" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+	      <div class="modal-dialog" role="document">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+	            <h4 class="modal-title"><i class="an-yxgz-logo"></i>百家乐游戏玩法</h4>
+	          </div>
+	          <div class="modal-body">
+	            <p>“闲家” “庄家”各先派两张牌, 以“闲家”先发,如第一轮未分出胜负需再按“牌例”发第二轮的牌, 最多每方3张牌, 谁最接近9点即为胜方, 又相同点数即和局。</p>
+	            <p>百家乐博牌规则：</p>
+	            <table class="table table-condensed">
+	            	<thead>
+	            		<tr>
+	            			<th style="width:150px;">闲两牌合计点数(闲家)</th>
+	            			<th>庄两牌合计点数(庄家)</th>
+	            		</tr>
+	            	</thead>
+	            	<tbody>
+	            		<tr>
+	            			<td>0&nbsp;&nbsp;必须博牌</td>
+	            			<td>0&nbsp;&nbsp;必须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>1&nbsp;&nbsp;必须博牌</td>
+	            			<td>1&nbsp;&nbsp;必须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>2&nbsp;&nbsp;必须博牌</td>
+	            			<td>2&nbsp;&nbsp;必须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>3&nbsp;&nbsp;必须博牌</td>
+	            			<td>3&nbsp;&nbsp;若闲博得8毋须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>4&nbsp;&nbsp;必须博牌</td>
+	            			<td>4&nbsp;&nbsp;若闲博得1, 8, 9, 10毋须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>5&nbsp;&nbsp;必须博牌</td>
+	            			<td>5&nbsp;&nbsp;若闲博得1, 2, 3, 8, 9, 10毋须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>6&nbsp;&nbsp;不得博牌</td>
+	            			<td>6&nbsp;&nbsp;若闲博得6, 7必须博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>7&nbsp;&nbsp;不得博牌</td>
+	            			<td>7&nbsp;&nbsp;不得博牌</td>
+	            		</tr>
+	            		<tr>
+	            			<td>8&nbsp;&nbsp;例牌, 即定胜负</td>
+	            			<td>8&nbsp;&nbsp;例牌, 即定胜负</td>
+	            		</tr>
+	            		<tr>
+	            			<td>9&nbsp;&nbsp;例牌, 即定胜负</td>
+	            			<td>9&nbsp;&nbsp;例牌, 即定胜负</td>
+	            		</tr>
+	            	</tbody>
+	            </table>
+	            <p>庄闲任何一方两牌合计8、9点为例牌, 对方不须博牌, 即定胜负. 庄闲两方各得6、7点, 即和局。</p>
+	            <ul class="list-unstyled">
+	            	<li>●&nbsp;&nbsp;选择押庄赢 1赔0.95 抽水5%</li>
+	            	<li>●&nbsp;&nbsp;选择押闲赢 1赔1 免抽水</li>
+	            	<li>●&nbsp;&nbsp;选择押和局 1赔8 免抽水</li>
+	            	<li>●&nbsp;&nbsp;选择押庄对 1赔11 免抽水</li>
+	            	<li>●&nbsp;&nbsp;选择押闲对 1赔11 免抽水</li>
+	            </ul>
+	          </div>
+	        </div>
+	      </div>
+	    </div>
+	<!-- </div> -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <div class="copytable" style="display:none">
+	    <div class="col-md-6" id="div-defalutid" style="overflow:hidden;"><!-- 用来判断桌子id的 -->
+		    			<div class="panel panel-2a">
+			    			<div class="panel-heading">
+			    			    <h3 class="panel-title">
+									<span id="tno">2301</span>
+									<span class="pull-right an-xianhong" id="xianhong">本台限红：5,000 - 500,000</span>
+			    			    </h3>
+			    			</div>
+			    			<div class="panel-body" style="width:auto">
+			    					<a href="./detail.php?tid=4" id="href" target="_blank"><!-- 链接标志 -->
+										<table frame="void" width="99%" border="1" cellspacing="0" style="padding:0;margin:0;table-layout: fixed;" id="tab-default">
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="left-tr">
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 		<td class="left-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 	<tr class="right-tr">
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 		<td class="right-td"></td>
+											 	</tr>
+											 
+											
+										</table>
+									</a>
+				    			<div class="abs-info">
+				    				<p class="text-center">最低投注</p>
+				    				<p class="text-center" id="zuidi">5,000</p>
+				    			</div>
+			    			</div>
+		    			</div>
+		</div>
+	</div>
+  </body>
+</html>
